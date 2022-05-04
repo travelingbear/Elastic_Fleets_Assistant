@@ -39,7 +39,7 @@ You can check here: https://dtqryi1d1tj5j.cloudfront.net/index.html
 Limitations
 -----------
 
- - As for now, it only generates CF templates for WINDOWS fleets.
+ - As for now, it only generates CF (and CLI) templates for WINDOWS fleets.
  - Linux fleets were put aside for a moment, but I will come back to it soon.
 
 
