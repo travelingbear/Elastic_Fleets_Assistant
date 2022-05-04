@@ -16,6 +16,7 @@ What is included in this repo?
  - FileSaver.js - This one helps allowing this web application provide a file download, so you can upload to your CloudFormation or use in the CLI
  - styles.css - Yeah, CSS. I know you can do amazing things with CSS, but don't expect much in this app. I am just trying to make it functional
  - jquery.serializejson.min.js - This plugin is AWESOME. Seriously. If it wasn't it, I would be just using powershell scripts instead of a webapplication (https://plugins.jquery.com/serializeJSON/)
+ - Image/gif files - These are there to give you more visual context on what needs to be done.
 
 <br>
 
