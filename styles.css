@@ -1,0 +1,182 @@
+.codeblock {
+      /* border: 1px solid gray; */
+      min-height: 50px;  /* if you want Flexible textarea/div then give min-height instead of height */
+      overflow: auto; 
+      padding: 2px;
+      resize: both;
+      min-width: 500px;
+      font-size:15px;
+      color:#000;
+      display: none;
+	  border-color: #aab7b8;
+	  position: relative;
+    }
+body {
+	margin: 0.7em;
+	max-width:1024px;
+}
+
+hr {
+    margin-top: -5px;
+    margin-bottom: 20px;
+    border: 0;
+    border-top: 1px solid lightgray;
+}
+li {
+    margin: 0.30em;
+}
+
+h1 {
+    font-size: 1.8em;
+    /* margin: 0.6em 0; */
+    font-weight: normal;
+    /* padding-top: 0.5em; */
+    text-align: center;
+}
+.divbox {
+    background-color: lightgray;
+    padding-top: 0.1em;
+    padding-bottom: 0.9em;
+    margin-bottom: 5px;
+    border-color: #cccccc;
+    border-style: solid;
+}
+
+h2, h3 {
+    color: #e47911;
+    font-size: 1.5em;
+    margin-bottom: 0.8em;
+    margin-top: 1em;
+    font-weight: normal;
+}
+
+p {
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+	margin-left: 2em;
+}
+
+pre {
+	margin-right: 3em;
+	min-width:600px;
+	max-width:900px;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.column {
+  float: left;
+  width: 45.00%;
+  padding: 5px;
+}
+
+/* Clearfix (clear floats) */
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/*testar*/
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+img {
+  border: 4px solid #555;
+}
+
+.img_zoom {
+    transition:transform 0.15s ease;
+}
+
+.img_zoom:hover {
+	transition-delay:0.4s;
+    -webkit-transform:scale(2.5);
+    transform:scale(2.5);
+}
+.notes {
+    font-size: 12px;
+    /* color: #994c4c; */
+    font-style: italic;
+    margin-left: 4em;
+}
+
+blockquote {
+    padding: 10px 10px;
+    margin: 0 0 20px;
+    border-left: 5px solid #eee;
+    margin-right: 7em;
+}
+
+.checkmark {
+    color: green;
+    font-weight: bold;
+	display:none;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+.fakeBox {
+    display: block;
+    padding: 9.5px;
+    margin: 0 0 10px;
+    font-size: 13px;
+    line-height: 1.42857143;
+    color: #333;
+    word-break: break-all;
+    word-wrap: break-word;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+	margin-left: 3em;
+	margin-right: 3em;
+}

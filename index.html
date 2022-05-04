@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+	<link rel="stylesheet" href="./styles.css">
+    <title>AppBlock/Application wizard</title>
+</head>
+<body>
+	<div class="divbox"><h1 id="titulo">Elastic Fleets - AppBlock/Application wizard <span style="color: transparent;">tabajara</span></h1></div>
+	
+	<!-- ### Creates the tabs -->
+	<div class="tab">
+		<button class="tablinks" id="defaultOpen" onclick="openTab(event, 'Prerequisites')">1 - Prerequisites <span id="checkprereq" class="checkmark">&#10003;</span></button>
+		<button class="tablinks" id="gJsonTab" onclick="openTab(event, 'GenJSON')">2 - Project Details<span id="checkgjson" class="checkmark"> &#10003;</span></button>
+		<button class="tablinks" id="cliCmdTab" onclick="openTab(event, 'ExecuteCommands')">3 - Create App/AppBlock<span id="checkclicmd" class="checkmark"> &#10003;</span></button>
+	</div>
+
+	<!-- ### TAB Prerequisites -->
+	<div id="Prerequisites" class="tabcontent">
+		<h3>Prepare a S3 bucket</h3>
+		<p>You need to create a S3 bucket to store the VHDX, the mount script and the image file. The "populate" feature of this page will look for a structure like this:
+		<div style="text-align: center;">
+		<img style="border:0px;margin-left:-6em;" src="folderStructure.png" alt="Folder structure">
+		</div>
+		<blockquote class="notes"><i>AppStream <b>needs</b> access to the bucket you created above. Inform the bucket name with folder here: <input onchange="checkBucketNameFormat()" id="BucketName" type="text" name="BucketName" value="" placeholder="bucket/folder"/> to generate a policy <a href="javascript:populateS3Policy()"><b>here</b></a>, so you can add it to your bucket.</i><span id="folderAlert" style="color: red;display:none;margin-top:10px;">Include a folder, like this: BUCKET/FOLDER </span></blockquote>
+		<div id="s3policyblock" class="codeblock" style="margin-left:5em;">
+			<pre style="width: 600px;"><code id="s3policy_block"></code></pre>
+			<a href="javascript:copyToClipboard('s3policy_block')">Copy JSON</a>
+		</div>
+		<p>To attach the policy, go to your bucket in the S3 console > Permissions tab > Bucket policy section > Click edit > and save the policy.</p>
+		<h3>Create a VHD file</h3>
+		<p>You can now create a VHD file as shown below. Then you need to mount > format as NTFS > and install your application to it.</p>
+		<div class="row" style="margin-left:3em;">
+			<div class="column">
+			<img class="img_zoom" src="./DiskMGMT1.png" alt="Disk Management" style="max-width: 200px;margin-left: 6em;">
+			</div>
+			<div class="column">
+			<img class="img_zoom" src="./DiskMGMT2.png" alt="Disk Management" style="max-width: 200px;margin-left: 0em;">
+			</div>
+		</div>
+		<blockquote class="notes">You can refer to the documentation <a href="https://docs.aws.amazon.com/appstream2/latest/developerguide/app-blocks.html#create-vhd" target="_blank"><b>here</b></a> <b>IF</b> you need further instructions</blockquote>
+		<p>After you mount and format the volume as NTFS, you can install your <b>self-contained</b> application there as shown below.<br>If you don't have a layered application now, you can download a portable app like <a href="https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.1.9.3/npp.8.1.9.3.portable.x64.zip" target="_blank"><b>Notepad++</b></a> to test.</p>
+		<p style="margin-left: 6em;padding: 0.5em;"><img src="./copyApp.gif" alt="Disk Management" /></p>
+		<blockquote class="notes">If you inform the path of your application <input onchange="changeBorderColorNeutralWindowsPath('AppPath')" title="Inform the path of your application INSIDE the OS and WITHOUT the drive letter. Like this: folder\app.exe" id="AppPath" type="text" name="AppPath" value="" placeholder="folder\app.exe"/> (the way it's in the OS), I can populate the launch path on the next page for you.</blockquote>
+		<p>Finally, after copying the apps, <a href="https://docs.microsoft.com/en-us/windows-server/storage/disk-management/manage-virtual-hard-disks#attaching-and-detaching-a-vhd" target="_blank"><b>detach the vdisk</b></a> and upload the .vhdx to your folder <span style="font-size: 1.35em;" id="iconFolder"></span> on S3.</p>
+		
+		<h3>Upload the icons</h3>
+		<p>Just upload the PNG or JPG files associated to the programs to your folder <span style="font-size: 1.35em;" id="imageFolder"></span> on S3.</p>
+		<p style="margin-left: 23%;"><img src="./npp.png" alt="NotepadPlusPlus icon" title="You can download this icon if you don't want to look for one now." style="border: none;width: 80px;"></p>
+		<blockquote class="notes">You can download the icon above if you don't have one to use now.</blockquote>
+		<h3>Create and upload the VHDX mount script</h3>
+		<p>Elastic Fleets need a mount script to mount your VHD to the fleet instance. You can create your own script or use my example below.</p>
+		<blockquote class="notes">If you inform an AppBlock name: <input onchange="changeBorderColorNeutral('AppBlockName')" title="AppBlock is just a fancy name of a block which your VHD will be associated to. Put a single name that makes sense for you. For example, if you create a VHD with Finance software, put Finance." id="AppBlockName" type="text" name="AppBlockName" value="" placeholder="salesApps, for example"/> and the VHD name: <input onchange="changeBorderColorNeutral('VHDXName')" title="VHDX or VHD file name" id="VHDXName" type="text" name="VHDXName" value="" placeholder="myApps.vhd"/> you created above, I can <a href="javascript:populateCommand()"><span style="font-size: 1.25em;">populate the command</span></a> below for you.</li></blockquote>
+		<div style="margin-left: 3em;">
+		<pre id="mountCommand">
+mkdir C:\EFApps\
+$disk_number = Mount-DiskImage "C:\AppStream\AppBlocks\<span id="cmdAppBlock">APPBLOCK_NAME</span>\<span id="cmdVHDX">VHDX_NAME</span>" -NoDriveLetter -Passthru | Get-Disk | Select -ExpandProperty Number
+$partition_number = Get-Partition $disk_number | where -Property Type -ne "Reserved" | select -ExpandProperty PartitionNumber
+Add-PartitionAccessPath -DiskNumber $disk_number -PartitionNumber $partition_number -AccessPath "C:\EFApps\"</pre>
+		<a href="javascript:downloadCmd('MountScript.ps1.txt', 'mountCommand')">Download script</a>
+		</div>
+		<p>This script will:</p>
+		<ol style="margin-left: 3em;">
+			<li>create a folder name C:\EFApps\</li>
+			<li>mount your VHDX with no letter</li>
+			<li>get the partition created and mount to the C:\EFApps folder</li>
+		</ol>
+		<p>Once you have the script, just upload the .ps1 file to your folder <span style="font-size: 1.35em;" id="iconFolder"></span> on S3 <i>(remove the .txt extension before!)</i>.</p>
+	<p></p>
+	<h4 style="text-align:right;margin-top:2em;">Next step <button class="tablinks" onclick="openTab(event, 'GenJSON');checkMark('checkprereq');populateCommand();">Project Details</button></h4>
+	</div>
+
+	<!-- ### TAB Project Details -->
+	<div id="GenJSON" class="tabcontent">		
+		<h3>AppBlock</h3>
+		<form id="appblock">
+		<!-- AppBlock name -->
+			<p>AppBlock name: <input onchange="changeBorderColorNeutral('Name')" id="Name" type="text" name="Name" value="" placeholder="Name without spaces"/></p>
+			  
+			<!-- SetupVHDDetails -->
+			<p>VHDX location: <input onchange="changeBorderColorNeutral('SourceS3LocationBucket')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link" id="SourceS3LocationBucket" type="text" name="SourceS3Location[S3Bucket]" value="" placeholder="S3 Bucket name"/>
+			   VHDX name: <input onchange="changeBorderColorNeutral('SourceS3LocationKey')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link" id="SourceS3LocationKey" type="text" name="SourceS3Location[S3Key]" value="" placeholder="folder/file.vhdx"/> <a href="javascript:populateBucketField('SourceS3LocationBucket');populateVhdField('SourceS3LocationKey')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link">Populate fields</a></p>
+			
+			<!-- ScriptDetails -->
+			<p>Script location: <input onchange="changeBorderColorNeutral('SetupScriptDetailsBucket')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link" id="SetupScriptDetailsBucket" type="text" name="SetupScriptDetails[ScriptS3Location[S3Bucket]]" value="" placeholder="S3 Bucket name"/>
+			   Script name: <input onchange="changeBorderColorNeutral('SetupScriptDetailsKey')" id="SetupScriptDetailsKey" type="text" name="SetupScriptDetails[ScriptS3Location[S3Key]]" value="" placeholder="folder/file.ps1"/> <a href="javascript:populateBucketField('SetupScriptDetailsBucket');populateScriptField('SetupScriptDetailsKey')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link">Populate fields</a></p>
+			<p>Executable Path: <input title="This line declares where is powershell, used to run the script" size="53" type="text" name="SetupScriptDetails[ExecutablePath]" value="C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe"/></p>
+			<p>Executable Params: <input onchange="changeBorderColorNeutralWindowsPath('SetupScriptDetailsExeParam')" title="This line informs which script you will run. In this case, the script you downloaded in the previous tab." size="50" id="SetupScriptDetailsExeParam" type="text" name="SetupScriptDetails[ExecutableParameters]" value="" placeholder="arguments to run your script"/> <a href="javascript:populateParam()">Populate parameter</a></p>
+			  
+			<p>Timeout in seconds: <input id="timeoutSec" style="width: 50px;" type="number" name="SetupScriptDetails[TimeoutInSeconds]:number" value=60 /></p>
+		</form>
+		
+		<!-- ######### Application ######### -->
+		
+		<h3>Application</h3>
+		<form id="application">	
+			<!-- Application details -->
+			<p>Application name: <input onchange="changeBorderColorNeutral('AppName')" id="AppName" type="text" name="Name" value="" placeholder="i.e: NotepadPlusPlus"/></p>
+			<p>Icon S3 location: <input onchange="changeBorderColorNeutral('AppSourceS3LocationBucket')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link" id="AppSourceS3LocationBucket" type="text" name="IconS3Location[S3Bucket]" value="" placeholder="S3 Bucket name"/>
+			   Icon name: <input onchange="changeBorderColorNeutral('AppSourceS3LocationKey')" id="AppSourceS3LocationKey" type="text" name="IconS3Location[S3Key]" value="" placeholder="folder/file.png"/> <a href="javascript:populateBucketField('AppSourceS3LocationBucket');changeIconFieldBorderColorRed();" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link">Populate bucket</a></p>
+			<p>Launch path: <input onchange="changeBorderColorNeutralWindowsPath('LaunchPath')" title="This is where AppStream will look for your application. If you haven't changed the MountScript.ps1, you should use C:\EFApps\folder\app.exe" size="40" id="LaunchPath" type="text" name="LaunchPath" value="" placeholder="C:\EFApps\Application.exe"/> <a href="javascript:populateLaunchPath()">Populate LaunchPath</a>
+			<blockquote class="notes"><i>The script you copied in the previous step mounts the VHD in the C:\EFApps folder. This means that, if your application is inside a folder, it will be "C:\EFApps\folder\application.exe".</i></blockquote>
+			<p>Platform:
+				<select id="Platforms" name="Platforms[]">
+					<option value="WINDOWS_SERVER_2019" selected>Windows Server 2019</option>
+					<option value="AMAZON_LINUX2">Amazon Linux</option>
+				</select>
+			</p>
+			<p>Instance family:
+				<select id="InstanceFamilies" name="InstanceFamilies[]">
+					<option value="GENERAL_PURPOSE" selected>General purpose</option>
+					<option value="GRAPHICS_G4">Graphics G4</option>
+				</select>
+			</p>
+			<p></p>
+		</form>
+		<p></p>
+		<h4 style="text-align:right;margin-top:2em;">Next step <button class="tablinks" onclick="openTab(event, 'ExecuteCommands');checkMark('checkgjson')">Create App/AppBlock</button></h4>
+		</div>
+
+	<!-- ### TAB Create Application / AppBlock -->
+	<div id="ExecuteCommands" class="tabcontent">
+		<h3>Create the AppBlock and Application</h3>
+		<p>At this point you should have:</p>
+		<ul style="margin-left: 1em;">
+			<li>Uploaded the VHDX file with the apps installed;</li>
+			<li>Uploaded the icon image file(s) to your folder on S3;</li>
+			<li>Uploaded the mount VHDX script to your folder on S3.</li>
+		</ul>
+		You can now choose one of the options below:
+		<!-- Account and Region -->
+		<h3>Download the CloudFormation template</h3>
+		
+		<p>You can now simply download the CloudFormation template with ALL the info you need to create a AppBlock/Application combo in AppStream :)</p>
+		
+		<!-- CF Template button -->
+		<p><button onclick="populateCfTemplate()">Give me the CF template already!</button>
+		<div id="CFTemplateblock" class="codeblock" style="margin-left:5em;"><pre style="width: 600px;"><code id="CFTemplate_block"></code></pre></div></p>
+		
+		<h3>(Optional) Using the CLI</h3>
+		
+		<p>Ok, you prefer the CLI. You will need then to follow three more steps:</p>
+		
+		<ol style="margin-left: 1em;">
+			<li>Inform your account number and region you want to launch your combo:</li>
+			<!-- Inform account and region to populate the JSON for application -->
+				<form id="acct_region">
+					<p>AWS Account: <input id="account" type="number" name="account" value="" placeholder="without hiffen/spaces"/> Region: <input id="region" type="text" name="Region" value="" placeholder="us-east-1"/></p>
+				</form>
+			<li>Download the JSON files for both AppBlock and Application:</li>
+				<p><button onclick="downloadAppBlkJson('#appblock','AppBlockJSONResults')">Download AppBlock JSON</button>  AND  <button onclick="downloadAppJson('#application','ApplicationJSONResults')">Download Application JSON</button></p>
+			
+			<li>Update your AWS CLI version if you need. You can use: 'aws --version' to check:</li>
+				<pre>aws --version<br>aws-cli/2.4.6 Python/3.8.8 <span style="color:green"> # your version should be equal o higher than this</span></pre>
+				<blockquote class="notes" style="margin-left: 1em;">If the CLI version is below 2.4.6, you need to <a href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html" target="_blank">update it</a>.</blockquote>
+				<p></p>
+			<li>Finally, run the commands below to create your AppBlock and Application (so you can create your Elastic Fleet):</li>
+			<pre>
+<span style="color:green">## If you downloaded the JSON files in the previous page, go to Downloads first</span>
+cd $HOME\Downloads
+
+<span style="color:green">## Then run the lines below</span>
+aws appstream create-app-block --cli-input-json file://AppBlockConfig.json --region <span id="cmdAPBRegion">YOUR_REGION</span> <span style="color:green"> # creates an AppBlock</span>
+aws appstream create-application --cli-input-json file://ApplicationConfig.json --region <span id="cmdAPPRegion">YOUR_REGION</span> <span style="color:green"> # creates an Application</span>
+</pre>
+				
+		</ol>
+
+		<!-- AppBlock block to populate - Used to download the JSON file -->
+		<div id="appblock_block" class="codeblock"><pre><code id="AppBlockJSONResults"></code></pre></div>
+		
+		<!-- Application block to populate - Used to download the JSON file -->
+		<div id="application_block" class="codeblock"><pre><code id="ApplicationJSONResults"></code></pre></div>
+		
+		<ul style="margin-left: 1em;">
+			
+		</ul>
+		<blockquote class="notes" style="margin-left: 5.4em;">You may get <b>AccessDenied</b> if your user doesn't have <b>CreateAppBlock</b> and <b>CreateApplication</b> permissions.<br>If you need to add, I can <a href="javascript:populateCliPolicy()"><b>generate a policy </b></a>for you to attach to your user.</blockquote> 
+		<div id="clipolicyblock" class="codeblock" style="margin-left:5em;">
+			<pre style="width: 600px;"><code id="clipolicy_block"></code></pre>
+			<a href="javascript:copyToClipboard('clipolicy_block')">Copy JSON</a>
+		</div>
+	</div>
+	<script type="text/javascript" src="./jquery.serializejson.min.js"></script>
+	<script type="text/javascript" src="./wizard.js"></script>
+</body>
+</html>
