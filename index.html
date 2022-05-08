@@ -7,7 +7,7 @@
     <title>AppBlock/Application wizard</title>
 </head>
 <body>
-	<div class="divbox"><h1 id="titulo">Elastic Fleets - AppBlock/Application wizard <span style="color: transparent;">tabajara</span></h1></div>
+	<div class="divbox"><h1 id="titulo">Elastic Fleets - AppBlock/Application wizard</h1></div>
 	
 	<!-- ### Creates the tabs -->
 	<div class="tab">
@@ -18,8 +18,11 @@
 
 	<!-- ### TAB Prerequisites -->
 	<div id="Prerequisites" class="tabcontent">
+		
+		
+		<!-- ### Prepare the bucket -->
 		<h3>Prepare a S3 bucket</h3>
-		<p>You need to create a S3 bucket to store the VHDX, the mount script and the image file. The "populate" feature of this page will look for a structure like this:
+		<p>You need to create a S3 bucket to store the VHD, the mount script and the image file. The "populate" feature of this page will look for a structure like this:
 		<div style="text-align: center;">
 		<img style="border:0px;margin-left:-6em;" src="folderStructure.png" alt="Folder structure">
 		</div>
@@ -29,6 +32,9 @@
 			<a href="javascript:copyToClipboard('s3policy_block')">Copy JSON</a>
 		</div>
 		<p>To attach the policy, go to your bucket in the S3 console > Permissions tab > Bucket policy section > Click edit > and save the policy.</p>
+		
+		
+		<!-- ### Create the VHD file -->
 		<h3>Create a VHD file</h3>
 		<p>You can now create a VHD file as shown below. Then you need to mount > format as NTFS > and install your application to it.</p>
 		<div class="row" style="margin-left:3em;">
@@ -43,19 +49,24 @@
 		<p>After you mount and format the volume as NTFS, you can install your <b>self-contained</b> application there as shown below.<br>If you don't have a layered application now, you can download a portable app like <a href="https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.1.9.3/npp.8.1.9.3.portable.x64.zip" target="_blank"><b>Notepad++</b></a> to test.</p>
 		<p style="margin-left: 6em;padding: 0.5em;"><img src="./copyApp.gif" alt="Disk Management" /></p>
 		<blockquote class="notes">If you inform the path of your application <input onchange="changeBorderColorNeutralWindowsPath('AppPath')" title="Inform the path of your application INSIDE the OS and WITHOUT the drive letter. Like this: folder\app.exe" id="AppPath" type="text" name="AppPath" value="" placeholder="folder\app.exe"/> (the way it's in the OS), I can populate the launch path on the next page for you.</blockquote>
-		<p>Finally, after copying the apps, <a href="https://docs.microsoft.com/en-us/windows-server/storage/disk-management/manage-virtual-hard-disks#attaching-and-detaching-a-vhd" target="_blank"><b>detach the vdisk</b></a> and upload the .vhdx to your folder <span style="font-size: 1.35em;" id="iconFolder"></span> on S3.</p>
+		<p>Finally, after copying the apps, <a href="https://docs.microsoft.com/en-us/windows-server/storage/disk-management/manage-virtual-hard-disks#attaching-and-detaching-a-vhd" target="_blank"><b>detach the vdisk</b></a> and upload the .vhd to your folder <span style="font-size: 1.35em;" id="iconFolder"></span> on S3.</p>
 		
+		
+		<!-- ### Upload the icons -->
 		<h3>Upload the icons</h3>
 		<p>Just upload the PNG or JPG files associated to the programs to your folder <span style="font-size: 1.35em;" id="imageFolder"></span> on S3.</p>
 		<p style="margin-left: 23%;"><img src="./npp.png" alt="NotepadPlusPlus icon" title="You can download this icon if you don't want to look for one now." style="border: none;width: 80px;"></p>
 		<blockquote class="notes">You can download the icon above if you don't have one to use now.</blockquote>
-		<h3>Create and upload the VHDX mount script</h3>
+		
+		
+		<!-- ### Create and upload the VHD script -->
+		<h3>Create and upload the VHD mount script</h3>
 		<p>Elastic Fleets need a mount script to mount your VHD to the fleet instance. You can create your own script or use my example below.</p>
 		<blockquote class="notes">If you inform an AppBlock name: <input onchange="changeBorderColorNeutral('AppBlockName')" title="AppBlock is just a fancy name of a block which your VHD will be associated to. Put a single name that makes sense for you. For example, if you create a VHD with Finance software, put Finance." id="AppBlockName" type="text" name="AppBlockName" value="" placeholder="salesApps, for example"/> and the VHD name: <input onchange="changeBorderColorNeutral('VHDXName')" title="VHDX or VHD file name" id="VHDXName" type="text" name="VHDXName" value="" placeholder="myApps.vhd"/> you created above, I can <a href="javascript:populateCommand()"><span style="font-size: 1.25em;">populate the command</span></a> below for you.</li></blockquote>
 		<div style="margin-left: 3em;">
 		<pre id="mountCommand">
 mkdir C:\EFApps\
-$disk_number = Mount-DiskImage "C:\AppStream\AppBlocks\<span id="cmdAppBlock">APPBLOCK_NAME</span>\<span id="cmdVHDX">VHDX_NAME</span>" -NoDriveLetter -Passthru | Get-Disk | Select -ExpandProperty Number
+$disk_number = Mount-DiskImage "C:\AppStream\AppBlocks\<span id="cmdAppBlock">APPBLOCK_NAME</span>\<span id="cmdVHDX">VHD_NAME</span>" -NoDriveLetter -Passthru | Get-Disk | Select -ExpandProperty Number
 $partition_number = Get-Partition $disk_number | where -Property Type -ne "Reserved" | select -ExpandProperty PartitionNumber
 Add-PartitionAccessPath -DiskNumber $disk_number -PartitionNumber $partition_number -AccessPath "C:\EFApps\"</pre>
 		<a href="javascript:downloadCmd('MountScript.ps1.txt', 'mountCommand')">Download script</a>
@@ -63,7 +74,7 @@ Add-PartitionAccessPath -DiskNumber $disk_number -PartitionNumber $partition_num
 		<p>This script will:</p>
 		<ol style="margin-left: 3em;">
 			<li>create a folder name C:\EFApps\</li>
-			<li>mount your VHDX with no letter</li>
+			<li>mount your VHD with no letter</li>
 			<li>get the partition created and mount to the C:\EFApps folder</li>
 		</ol>
 		<p>Once you have the script, just upload the .ps1 file to your folder <span style="font-size: 1.35em;" id="iconFolder"></span> on S3 <i>(remove the .txt extension before!)</i>.</p>
@@ -79,8 +90,8 @@ Add-PartitionAccessPath -DiskNumber $disk_number -PartitionNumber $partition_num
 			<p>AppBlock name: <input onchange="changeBorderColorNeutral('Name')" id="Name" type="text" name="Name" value="" placeholder="Name without spaces"/></p>
 			  
 			<!-- SetupVHDDetails -->
-			<p>VHDX location: <input onchange="changeBorderColorNeutral('SourceS3LocationBucket')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link" id="SourceS3LocationBucket" type="text" name="SourceS3Location[S3Bucket]" value="" placeholder="S3 Bucket name"/>
-			   VHDX name: <input onchange="changeBorderColorNeutral('SourceS3LocationKey')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link" id="SourceS3LocationKey" type="text" name="SourceS3Location[S3Key]" value="" placeholder="folder/file.vhdx"/> <a href="javascript:populateBucketField('SourceS3LocationBucket');populateVhdField('SourceS3LocationKey')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link">Populate fields</a></p>
+			<p>VHD location: <input onchange="changeBorderColorNeutral('SourceS3LocationBucket')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link" id="SourceS3LocationBucket" type="text" name="SourceS3Location[S3Bucket]" value="" placeholder="S3 Bucket name"/>
+			   VHD name: <input onchange="changeBorderColorNeutral('SourceS3LocationKey')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link" id="SourceS3LocationKey" type="text" name="SourceS3Location[S3Key]" value="" placeholder="folder/file.vhd"/> <a href="javascript:populateBucketField('SourceS3LocationBucket');populateVhdField('SourceS3LocationKey')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link">Populate fields</a></p>
 			
 			<!-- ScriptDetails -->
 			<p>Script location: <input onchange="changeBorderColorNeutral('SetupScriptDetailsBucket')" title="IF you informed your bucket/folder in the previous tab, you can populate the bucket using this link" id="SetupScriptDetailsBucket" type="text" name="SetupScriptDetails[ScriptS3Location[S3Bucket]]" value="" placeholder="S3 Bucket name"/>
@@ -124,9 +135,9 @@ Add-PartitionAccessPath -DiskNumber $disk_number -PartitionNumber $partition_num
 		<h3>Create the AppBlock and Application</h3>
 		<p>At this point you should have:</p>
 		<ul style="margin-left: 1em;">
-			<li>Uploaded the VHDX file with the apps installed;</li>
+			<li>Uploaded the VHD file with the apps installed;</li>
 			<li>Uploaded the icon image file(s) to your folder on S3;</li>
-			<li>Uploaded the mount VHDX script to your folder on S3.</li>
+			<li>Uploaded the mount VHD script to your folder on S3.</li>
 		</ul>
 		You can now choose one of the options below:
 		<!-- Account and Region -->
