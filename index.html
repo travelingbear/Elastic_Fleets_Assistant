@@ -7,7 +7,12 @@
     <title>AppBlock/Application wizard</title>
 </head>
 <body>
-	<div class="divbox"><h1 id="titulo">Elastic Fleets - AppBlock/Application wizard</h1></div>
+	<div class="divbox"><h1 id="titulo">Elastic Fleets - AppBlock/Application wizard</h1>
+		<select class="select_box" name="OS" id="os_choice">
+			<option value="windows">Windows</option>
+			<option value="linux">Linux</option>
+		</select>
+	</div>
 	
 	<!-- ### Creates the tabs -->
 	<div class="tab">
@@ -34,22 +39,47 @@
 		<p>To attach the policy, go to your bucket in the S3 console > Permissions tab > Bucket policy section > Click edit > and save the policy.</p>
 		
 		
-		<!-- ### Create the VHD file -->
+		<!-- ### Create the VHD file - IF WINDOWS -->
 		<h3>Create a VHD file</h3>
-		<p>You can now create a VHD file as shown below. Then you need to mount > format as NTFS > and install your application to it.</p>
-		<div class="row" style="margin-left:3em;">
-			<div class="column">
-			<img class="img_zoom" src="./DiskMGMT1.png" alt="Disk Management" style="max-width: 200px;margin-left: 6em;">
+		<div id="mount_if_windows">
+			<p>You can now create a VHD file as shown below. Then you need to mount > format as NTFS > and install your application to it.</p>
+			<div class="row" style="margin-left:3em;">
+				<div class="column">
+				<img class="img_zoom" src="./DiskMGMT1.png" alt="Disk Management" style="max-width: 200px;margin-left: 6em;">
+				</div>
+				<div class="column">
+				<img class="img_zoom" src="./DiskMGMT2.png" alt="Disk Management" style="max-width: 200px;margin-left: 0em;">
+				</div>
 			</div>
-			<div class="column">
-			<img class="img_zoom" src="./DiskMGMT2.png" alt="Disk Management" style="max-width: 200px;margin-left: 0em;">
-			</div>
+			<blockquote class="notes">You can refer to the documentation <a href="https://docs.aws.amazon.com/appstream2/latest/developerguide/app-blocks.html#create-vhd" target="_blank"><b>here</b></a> <b>IF</b> you need further instructions</blockquote>
+			
+			<p>After you mount and format the volume as NTFS, you can install your <b>self-contained</b> application there as shown below.<br>If you don't have a layered application now, you can download a portable app like <a href="https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.1.9.3/npp.8.1.9.3.portable.x64.zip" target="_blank"><b>Notepad++</b></a> to test.</p>
+			
+			<p style="margin-left: 6em;padding: 0.5em;"><img src="./copyApp.gif" alt="Disk Management" /></p>
+			
+			<blockquote class="notes">If you inform the path of your application <input onchange="changeBorderColorNeutralWindowsPath('AppPath')" title="Inform the path of your application INSIDE the OS and WITHOUT the drive letter. Like this: folder\app.exe" id="AppPath" type="text" name="AppPath" value="" placeholder="folder\app.exe"/> (the way it's in the OS), I can populate the launch path on the next page for you.</blockquote>
+			
+			<p>Finally, after copying the apps, <a href="https://docs.microsoft.com/en-us/windows-server/storage/disk-management/manage-virtual-hard-disks#attaching-and-detaching-a-vhd" target="_blank"><b>detach the vdisk</b></a> and upload the .vhd to your folder <span style="font-size: 1.35em;" id="iconFolder"></span> on S3.</p>
+		
 		</div>
-		<blockquote class="notes">You can refer to the documentation <a href="https://docs.aws.amazon.com/appstream2/latest/developerguide/app-blocks.html#create-vhd" target="_blank"><b>here</b></a> <b>IF</b> you need further instructions</blockquote>
-		<p>After you mount and format the volume as NTFS, you can install your <b>self-contained</b> application there as shown below.<br>If you don't have a layered application now, you can download a portable app like <a href="https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.1.9.3/npp.8.1.9.3.portable.x64.zip" target="_blank"><b>Notepad++</b></a> to test.</p>
-		<p style="margin-left: 6em;padding: 0.5em;"><img src="./copyApp.gif" alt="Disk Management" /></p>
-		<blockquote class="notes">If you inform the path of your application <input onchange="changeBorderColorNeutralWindowsPath('AppPath')" title="Inform the path of your application INSIDE the OS and WITHOUT the drive letter. Like this: folder\app.exe" id="AppPath" type="text" name="AppPath" value="" placeholder="folder\app.exe"/> (the way it's in the OS), I can populate the launch path on the next page for you.</blockquote>
-		<p>Finally, after copying the apps, <a href="https://docs.microsoft.com/en-us/windows-server/storage/disk-management/manage-virtual-hard-disks#attaching-and-detaching-a-vhd" target="_blank"><b>detach the vdisk</b></a> and upload the .vhd to your folder <span style="font-size: 1.35em;" id="iconFolder"></span> on S3.</p>
+		
+		
+		<!-- ### Create the VHD file - IF LINUX -->
+		<div id="mount_if_linux">
+			<p>1. Create the unformatted and uninitialized VHD file:</p> 
+			<p style="margin-left:4em;"><code>sudo dd if=/dev/zero of=MY_VHD.img bs=1M count=1200</code></p>
+			<blockquote class="notes">This will create a VHD of 1GB in size</blockquote>
+			<p>2. Format the VHD as EXT4</p>
+			<p style="margin-left:4em;"><code>sudo mkfs -t ext4 /media/MY_VHD.img</code></p>
+			<p>3. Now create an empty folder and mount the VHD (so you can install your application)</p>
+			<p style="margin-left:4em;"><code>sudo mkfs -t ext4 /mnt/VHDs/</code></p>
+			<p style="margin-left:4em;"><code>sudo mount -t auto -o loop /media/MY_VHD.img /mnt/VHDs/</code></p>
+			<p>4. Install your application on your new mounted volume.</p>
+			<blockquote class="notes">If you inform the path of your application <input onchange="changeBorderColorNeutralWindowsPath('AppPath')" title="Inform the path of your application INSIDE the OS and WITHOUT the drive letter. Like this: folder/app.sh" id="AppPath" type="text" name="AppPath" value="" placeholder="folder/app.sh"/> (the way it's in the OS), I can populate the launch path on the next page for you.</blockquote>
+			<p>5. Detach the volume</p>
+			<p style="margin-left:4em;"><code>sudo umount /mnt/VHDs/</code></p>
+			<blockquote class="notes">It goes without saying that you CAN change the names above. You can refer to the documentation <a href="https://docs.aws.amazon.com/appstream2/latest/developerguide/app-blocks.html#create-vhd" target="_blank"><b>here</b></a> if you need further instructions</blockquote>
+		</div>
 		
 		
 		<!-- ### Upload the icons -->

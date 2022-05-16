@@ -40,6 +40,15 @@ h1 {
     margin-bottom: 5px;
     border-color: #cccccc;
     border-style: solid;
+	display: grid;
+}
+
+.select_box {
+    text-align: center;
+    font-size: large;
+    background-color: gainsboro;
+    height: 30px;
+    margin: 0 170px 0 170px;
 }
 
 h2, h3 {
