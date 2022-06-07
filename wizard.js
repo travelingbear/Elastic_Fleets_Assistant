@@ -15,6 +15,18 @@ function openTab(evt, tabName) {
 	document.getElementById('titulo').scrollIntoView({ block: 'end',  behavior: 'smooth' });
 }
 
+//controls which OS will be shown in the wizard
+function selectOS() {
+	if (document.getElementById("select_windows").selected) {
+		document.getElementById("if_windows").style.display = "block";
+		document.getElementById("if_linux").style.display = "none";
+	} else {
+		document.getElementById("if_windows").style.display = "none";
+		document.getElementById("if_linux").style.display = "block";
+	}
+  }
+
+
 //makes the TAB #1, Prerequisites, the default opened when opening the page
 document.getElementById("defaultOpen").click();
 
