@@ -6,11 +6,13 @@
 	<link rel="stylesheet" href="./styles.css">
     <title>AppBlock/Application wizard</title>
 </head>
-<body>
+<body onload="selectOS()">
 	<div class="divbox"><h1 id="titulo">Elastic Fleets - AppBlock/Application wizard</h1>
-		<select class="select_box" name="OS" id="os_choice">
-			<option value="windows">Windows</option>
-			<option value="linux">Linux</option>
+		<select class="select_box" name="OS" id="os_choice" onchange="selectOS()">
+			<option id="select_windows" value="windows">Windows</option>
+			<option id="select_linux" value="linux">Linux - Custom image</option>
+			<option id="select_linux_example_1" value="linux_remina">Linux - Remina example</option>
+			<option id="select_linux_example_2" value="linux_chrome">Linux - Chrome example</option>
 		</select>
 	</div>
 	
@@ -37,11 +39,14 @@
 			<a href="javascript:copyToClipboard('s3policy_block')">Copy JSON</a>
 		</div>
 		<p>To attach the policy, go to your bucket in the S3 console > Permissions tab > Bucket policy section > Click edit > and save the policy.</p>
+
+
+		<!-- ### WINDOWS ### -->
 		
-		
+
 		<!-- ### Create the VHD file - IF WINDOWS -->
 		<h3>Create a VHD file</h3>
-		<div id="mount_if_windows">
+		<div id="if_windows">
 			<p>You can now create a VHD file as shown below. Then you need to mount > format as NTFS > and install your application to it.</p>
 			<div class="row" style="margin-left:3em;">
 				<div class="column">
@@ -63,9 +68,12 @@
 		
 		</div>
 		
+
+		<!-- ### LINUX ### -->
+
 		
 		<!-- ### Create the VHD file - IF LINUX -->
-		<div id="mount_if_linux">
+		<div id="if_linux">
 			<p>1. Create the unformatted and uninitialized VHD file:</p> 
 			<p style="margin-left:4em;"><code>sudo dd if=/dev/zero of=MY_VHD.img bs=1M count=1200</code></p>
 			<blockquote class="notes">This will create a VHD of 1GB in size</blockquote>
@@ -92,7 +100,7 @@
 		<!-- ### Create and upload the VHD script -->
 		<h3>Create and upload the VHD mount script</h3>
 		<p>Elastic Fleets need a mount script to mount your VHD to the fleet instance. You can create your own script or use my example below.</p>
-		<blockquote class="notes">If you inform an AppBlock name: <input onchange="changeBorderColorNeutral('AppBlockName')" title="AppBlock is just a fancy name of a block which your VHD will be associated to. Put a single name that makes sense for you. For example, if you create a VHD with Finance software, put Finance." id="AppBlockName" type="text" name="AppBlockName" value="" placeholder="salesApps, for example"/> and the VHD name: <input onchange="changeBorderColorNeutral('VHDXName')" title="VHDX or VHD file name" id="VHDXName" type="text" name="VHDXName" value="" placeholder="myApps.vhd"/> you created above, I can <a href="javascript:populateCommand()"><span style="font-size: 1.25em;">populate the command</span></a> below for you.</li></blockquote>
+		<blockquote class="notes">If you inform an AppBlock name: <input onchange="changeBorderColorNeutral('AppBlockName')" title="AppBlock is just a fancy name of a block which your VHD will be associated to. Put a single name that makes sense for you. For example, if you create a VHD with Finance software, put Finance." id="AppBlockName" type="text" name="AppBlockName" value="" placeholder="salesApps, for example"/> and the <span id="if_linux">IMG</span><span id="if_windows">VHD</span> name: <input onchange="changeBorderColorNeutral('VHDXName')" title="VHDX or VHD file name" id="VHDXName" type="text" name="VHDXName" value="" placeholder="myApps.vhd or myApps.img"/> you created above, I can <a href="javascript:populateCommand()"><span style="font-size: 1.25em;">populate the command</span></a> below for you.</li></blockquote>
 		<div style="margin-left: 3em;">
 		<pre id="mountCommand">
 mkdir C:\EFApps\
